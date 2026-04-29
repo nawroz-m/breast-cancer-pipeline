@@ -15,7 +15,7 @@ from ultralytics import YOLO
 import torchvision
 from utils_classes import UNet, DoubleConv, Cnn_network, TumorClassifier, Segment_Cnn_network
 from utils_pred import predict_bbox, predict_contour, predict_classes, predict_contour_cnn_resnet
-from utils_helper import crop_and_resize, render_image_fixed, placeholder_content, upload_desc
+from utils_helper import crop_and_resize, render_image_fixed, placeholder_content, upload_desc, download_link
 
 # -------------------- CONFIG --------------------
 st.set_page_config(page_title="BSU detector", page_icon="bsu-icon.png", layout="wide")
