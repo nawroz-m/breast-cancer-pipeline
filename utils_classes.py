@@ -183,10 +183,7 @@ class Cnn_network(nn.Module):
     x4 = self.block4(x3) # <-- Bottleneck
     # x4 = self.dropout(x4) # <-- reduce noise at bottleneck
 
-    # -------------------------
-    # 🔥 FEATURE FUSION
-    # -------------------------
-
+    #  FEATURE FUSION
     x4_up = nn.functional.interpolate(x4, size=x3.shape[2:])
 
     # combine deep + mid features
@@ -194,10 +191,7 @@ class Cnn_network(nn.Module):
 
     fused = self.fuse_head(fused)
 
-    # -------------------------
     # HEAD (bbox prediction)
-    # -------------------------
-
     # output objects
     features = self.head(fused)
     attention_logits = self.attention_head(fused)  # [B, 5, H, W]
@@ -323,9 +317,6 @@ class Segment_Cnn_network(nn.Module):
     x = self.final(x)
     return x
 
-# ══════════════════════════════════════════════════════════════════════
-#  STEP 2: MODEL ARCHITECTURE
-# ══════════════════════════════════════════════════════════════════════
 
 class TumorClassifier(nn.Module):
 
