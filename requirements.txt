@@ -2,3 +2,4 @@ streamlit==1.50.0
 torch==2.8.0
 torchvision==0.23.0
 albumentations==2.0.8
+ultralytics==8.4.41
