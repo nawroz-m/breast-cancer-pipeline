@@ -3,4 +3,4 @@ torch==2.8.0
 torchvision==0.23.0
 albumentations==2.0.8
 ultralytics==8.4.41
-opencv-python-headless
+opencv-python-headless==4.10.0.84
