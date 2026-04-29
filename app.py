@@ -106,7 +106,39 @@ def sync_segmentation_with_bbox():
         st.session_state.seg_model = SEGMENT_MODELS[1]  # CNN (Resnet)
 sync_segmentation_with_bbox()
 
+if "bbox_preview" not in st.session_state:
+    st.session_state.bbox_preview = None
 
+if "mask_preview" not in st.session_state:
+    st.session_state.mask_preview = None
+
+def reset_session():
+    keys = [
+        "current_image",
+        "classification_result",
+        "pred_box",
+        "bbox_preview",
+        "mask_preview",
+    ]
+    for k in keys:
+        st.session_state[k] = None
+
+    st.session_state.stage = "bbox"
+    st.session_state.last_uploaded = None
+
+def on_bbox_change():
+    st.session_state.bbox_model = st.session_state.bbox_select
+    sync_segmentation_with_bbox()
+
+    # clear old results 
+    st.session_state.current_image = None
+    st.session_state.pred_box = None
+    st.session_state.bbox_preview = None
+    st.session_state.mask_preview = None
+    st.session_state.classification_result = None
+
+    st.session_state.stage = "bbox"
+    
 left_col, right_col = st.columns([1, 1], gap="large")
 
 # LEFT
@@ -121,15 +153,50 @@ with left_col:
      #  Update the session
     if "last_uploaded" not in st.session_state:
         st.session_state.last_uploaded = None
+    # -------- CLEAR STATE WHEN FILE REMOVED --------
     if uploaded_file is not None:
         file_hash = hashlib.md5(uploaded_file.getvalue()).hexdigest() 
 
         if st.session_state.last_uploaded != file_hash:
-            st.session_state.stage = "bbox"
+            reset_session()   #  reset everything cleanly
             st.session_state.last_uploaded = file_hash
-            st.session_state.current_image = None
-            st.session_state.classification_result = None  
+            st.rerun()        #  force fresh UI
+    # ---------------- PREVIEW PANEL ----------------
 
+    def pil_from_array(img):
+        if isinstance(img, np.ndarray):
+            return Image.fromarray(img)
+        return img
+
+    def image_download_button(img, filename):
+        buf = BytesIO()
+        pil_img = pil_from_array(img)
+        pil_img.save(buf, format="PNG")
+        byte_im = buf.getvalue()
+
+        st.download_button(
+            label="⬇️ Download",
+            data=byte_im,
+            file_name=filename,
+            mime="image/png",
+            use_container_width=True
+        )
+
+    # -------- BBOX PREVIEW --------
+    if (st.session_state.bbox_preview is not None and  st.session_state.stage in ["contour", "classify"]):
+        with st.expander("📦 Cancer Box Preview", st.session_state.stage != "bbox"):
+            st.image(st.session_state.bbox_preview, use_container_width=True, clamp=True)
+            image_download_button(st.session_state.bbox_preview, "bbox_result.png")
+
+    # -------- MASK PREVIEW --------
+    if (st.session_state.mask_preview is not None and  st.session_state.stage == "classify"):
+        with st.expander("🧬 Masked Preview", st.session_state.stage != "bbox"):
+            st.image(st.session_state.mask_preview, use_container_width=True, clamp=True)
+            image_download_button(st.session_state.mask_preview, "mask_result.png")
+
+    if uploaded_file is None and st.session_state.last_uploaded is not None:
+        reset_session()
+        st.rerun()
 with right_col:
     
     if uploaded_file:
@@ -147,25 +214,23 @@ with right_col:
                 #  update only AFTER ready
                 st.session_state.current_image = pred_img
                 st.session_state.pred_box = pred_box
+                st.session_state.bbox_preview = pred_img.copy()
 
             render_image_fixed(st.session_state.current_image)
-
 
         # ---------------- STAGE 2: CONTOUR ----------------
         elif st.session_state.stage == "contour":
             with st.spinner("Running contour model..."):
                 current_model = load_seg_model()
-                print(f" st.session_state.seg_model : {st.session_state.seg_model}")
                 if st.session_state.seg_model == SEGMENT_MODELS[1]:
                     contour_img = predict_contour_cnn_resnet(image, current_model)
                 else:
                     contour_img = predict_contour(image, current_model, st.session_state.pred_box, device)
 
                 st.session_state.current_image = contour_img
+                st.session_state.mask_preview = contour_img.copy()
 
             render_image_fixed(st.session_state.current_image)
-
-
 
         # ---------------- STAGE 3: CLASSIFICATION ----------------
         elif st.session_state.stage == "classify":
@@ -215,10 +280,7 @@ with right_col:
                     options=BBOX_MODELS,
                     key="bbox_select",
                     index=BBOX_MODELS.index(st.session_state.bbox_model),
-                    on_change=lambda: (
-                        setattr(st.session_state, "bbox_model", st.session_state.bbox_select),
-                        sync_segmentation_with_bbox()
-                    )
+                    on_change=on_bbox_change
                 )
             if st.session_state.stage == "contour":
                 st.selectbox(

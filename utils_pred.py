@@ -161,17 +161,12 @@ def predict_contour_cnn_resnet(image_pil, model):
 
 def predict_classes(image_pil, model, bbox, device): 
     image_np = np.array(image_pil)
-    print(f"bbox: {bbox}")
     crop_img = crop_and_resize(image_np, bbox)
-
-    # augmented = classification_transform(image=crop_img)
-    # x = augmented["image"].unsqueeze(0).to(device)
     crop_pil = Image.fromarray(crop_img)   # VERY IMPORTANT
     x = classification_transform(crop_pil).unsqueeze(0).to(device)
 
     with torch.no_grad():
         pred = model(x).squeeze()
-        # print(f'predicted classes: {pred}')
     prob = torch.sigmoid(pred).item()
     classes = ["Benign", "Malignant"]
 
