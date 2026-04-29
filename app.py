@@ -141,7 +141,18 @@ def on_bbox_change():
     st.session_state.classification_result = None
 
     st.session_state.stage = "bbox"
-    
+
+def go_back_stage():
+    if st.session_state.stage == "contour":
+        st.session_state.stage = "bbox"
+        st.session_state.mask_preview = None  # remove forward result
+
+    elif st.session_state.stage == "classify":
+        st.session_state.stage = "contour"
+        st.session_state.classification_result = None  # remove forward result
+
+    st.rerun()
+
 left_col, right_col = st.columns([1, 1], gap="large")
 
 # LEFT
@@ -239,7 +250,47 @@ with right_col:
 
             render_image_fixed(st.session_state.current_image)
 
-        # ---------------- STAGE 3: CLASSIFICATION ----------------
+      
+        # BUTTONS (Forward + Back) 
+        col_btn1, col_btn2 = st.columns([1, 1]) 
+         
+        with col_btn1:
+            if st.session_state.stage != "classify":
+                if st.button("⬅️ Back", disabled=st.session_state.stage == "bbox", use_container_width=True):
+                    go_back_stage()
+
+        # CONFIRM BUTTON 
+        with col_btn2:
+            if st.session_state.stage != "classify":
+                if st.button("✅ Confirm Results", use_container_width=True, type="primary"):
+                    if st.session_state.stage == "bbox":
+                        st.session_state.stage = "contour"
+
+                    elif st.session_state.stage == "contour":
+                        st.session_state.stage = "classify"
+
+                    st.rerun()
+
+        # BUTTON CHANGES STAGE
+        if st.session_state.stage != "classify": 
+            if  st.session_state.stage == "bbox":
+                st.selectbox(
+                    "Bounding Box Model",
+                    options=BBOX_MODELS,
+                    key="bbox_select",
+                    index=BBOX_MODELS.index(st.session_state.bbox_model),
+                    on_change=on_bbox_change
+                )
+            if st.session_state.stage == "contour":
+                st.selectbox(
+                    "Mask Model",
+                    options=SEGMENT_MODELS,
+                    key="segment_select",
+                    index=SEGMENT_MODELS.index(st.session_state.seg_model),
+                    disabled=True
+                )
+
+          # ---------------- STAGE 3: CLASSIFICATION ----------------
         elif st.session_state.stage == "classify":
 
             with st.spinner("Running classification model..."):
@@ -251,7 +302,13 @@ with right_col:
  
             result = st.session_state.classification_result 
 
-            col1, col2 = st.columns([1, 1])
+            col1, col2 = st.columns([1, 1])             
+            with col1:
+                if st.button("⬅️ Back", disabled=st.session_state.stage == "bbox", use_container_width=True):
+                    go_back_stage()
+
+            with col2:
+                st.button("✅ Confirm Results", disabled=True, use_container_width=True, type="primary")
 
             with col1:
                 st.markdown("#### 🧠 Final Analysis")
@@ -271,31 +328,5 @@ with right_col:
                     st.progress(float(prob))
                     st.caption(f"{cls}: {prob*100:.1f}%")
 
-        # BUTTON CHANGES STAGE
-        if st.session_state.stage != "classify":
-            if st.button("✅ Confirm Results", use_container_width=True, type="primary"):
-                if st.session_state.stage == "bbox":
-                    st.session_state.stage = "contour"
-
-                elif st.session_state.stage == "contour":
-                    st.session_state.stage = "classify"
-
-                st.rerun() 
-            if  st.session_state.stage == "bbox":
-                st.selectbox(
-                    "Bounding Box Model",
-                    options=BBOX_MODELS,
-                    key="bbox_select",
-                    index=BBOX_MODELS.index(st.session_state.bbox_model),
-                    on_change=on_bbox_change
-                )
-            if st.session_state.stage == "contour":
-                st.selectbox(
-                    "Mask Model",
-                    options=SEGMENT_MODELS,
-                    key="segment_select",
-                    index=SEGMENT_MODELS.index(st.session_state.seg_model),
-                    disabled=True
-                )
     else:
        placeholder_content()
