@@ -13,6 +13,16 @@ def crop_and_resize(img, box, size=256):
 
     return crop_img
 
+def download_link(img_path, text="download sample image"):
+    with open(img_path, "rb") as f:
+        b64 = base64.b64encode(f.read()).decode()
+
+    return f'''
+    <a href="data:file/png;base64,{b64}" download="sample.png"
+       style="color:#1f77b4; text-decoration:underline; cursor:pointer;">
+       {text}
+    </a>
+    '''
 
 def render_image_fixed(img_array):
     # convert numpy → PNG → base64
@@ -91,3 +101,16 @@ def placeholder_content():
         """,
         unsafe_allow_html=True
     )
+
+def upload_desc():
+    st.markdown(f"""
+    <div style="
+            margin-bottom:10px;
+            font-size:13px;
+            color:#777;
+        ">    
+        AI-assisted diagnosis tool — for research and clinical support only  
+        <div> 📌 Upload a breast scan image (MRI / Ultrasound / X-ray) {download_link("assets/malignant (167).png")}</div>
+
+    </div>
+    """, unsafe_allow_html=True)

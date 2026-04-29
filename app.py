@@ -15,7 +15,7 @@ from ultralytics import YOLO
 import torchvision
 from utils_classes import UNet, DoubleConv, Cnn_network, TumorClassifier, Segment_Cnn_network
 from utils_pred import predict_bbox, predict_contour, predict_classes, predict_contour_cnn_resnet
-from utils_helper import crop_and_resize, render_image_fixed, placeholder_content
+from utils_helper import crop_and_resize, render_image_fixed, placeholder_content, upload_desc
 
 # -------------------- CONFIG --------------------
 st.set_page_config(page_title="BSU detector", page_icon="bsu-icon.png", layout="wide")
@@ -24,8 +24,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 
-BBOX_MODELS = ["YOLOv8 (best)", "CNN (Unet)"]
-SEGMENT_MODELS = ["Unet (best)", "CNN (Resnet)"]
+BBOX_MODELS = ["YOLOv8 (Recommended)", "CNN (Unet)"]
+SEGMENT_MODELS = ["Unet (Recommended)", "CNN (Resnet)"]
 
 
 # -------------------- LOAD MODEL --------------------
@@ -158,11 +158,9 @@ left_col, right_col = st.columns([1, 1], gap="large")
 # LEFT
 with left_col:
     # st.markdown("### Upload")
-    st.markdown("### Upload Medical Image")
-    st.caption(""" 
-        AI-assisted diagnosis tool — for research and clinical support only \n\n 
-        📌 Upload a breast scan image (MRI / Ultrasound / X-ray).
-    """)
+    st.markdown("### Upload Medical Image") 
+    upload_desc()
+
     uploaded_file = st.file_uploader(
         "Choose an image",
         type=["jpg", "jpeg", "png", "webp"],
