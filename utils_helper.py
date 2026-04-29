@@ -22,17 +22,16 @@ def render_image_fixed(img_array):
 
     st.markdown(
         f"""
-        <div style="
-            width: 100%;
+       <div style="
             height: 420px;
-            border: 1px dashed #ccc;
-            border-radius: 12px;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
-            background-color: #111;
-            overflow: hidden;
-            padding: 2px;
+            border: 2px dashed #4a90e2;
+            border-radius: 12px;
+            padding: 25px;
+            background-color: #f5f7fa;
+            color: #333333;
         ">
             <img src="data:image/png;base64,{img_str}"
                  style=" 
@@ -48,27 +47,47 @@ def render_image_fixed(img_array):
     )
     st.write("")
 
-def placeholder_content(): 
-    st.markdown("### Preview & Verification")
-    placeholder = st.empty()
 
-    placeholder.markdown(
-            """
-            <div style="
-                height: 420px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                border: 2px dashed #aaa;
-                border-radius: 10px;
-                color: #888;
-                font-size: 18px;
-                text-align: center;
-            ">
-                <h2>Upload your image to start with</h2>
-                <p>Detecting cancer → <strong> Confirm </strong> → Detecting mask →  <strong> Confirm </strong> → Classify cancer</p>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+def placeholder_content():
+    st.markdown("### 🧠 AI Diagnosis Workflow")
+
+    st.markdown(
+        """
+        <div style="
+            height: 420px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border: 2px dashed #4a90e2;
+            border-radius: 12px;
+            padding: 25px;
+            background-color: #f5f7fa;
+            color: #333333;
+        ">
+
+        <h3 style="text-align:center; margin-bottom:20px; color:#222;">
+            Upload a medical image to begin analysis
+        </h3>
+
+        <div style="font-size:16px; line-height:1.8; color:#444;">
+
+        <p>🔹 <b>Step 1:</b> Upload image (MRI / Ultrasound / X-ray)</p>
+        <p>🔹 <b>Step 2:</b> Detect tumor region → <b>Confirm</b></p>
+        <p>🔹 <b>Step 3:</b> Segment tumor mask → <b>Confirm</b></p>
+        <p>🔹 <b>Step 4:</b> Classify result (Benign / Malignant)</p>
+
+        </div>
+
+        <div style="
+            margin-top:20px;
+            text-align:center;
+            font-size:13px;
+            color:#777;
+        ">
+            AI-assisted diagnostic pipeline for research & clinical support
+        </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
